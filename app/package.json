@@ -1,5 +1,5 @@
 {
-  "name": "sunrise-quote-app",
+  "name": "sunrise-cloud-app",
   "version": "1.0.0",
   "description": "Amelia Earhart quote over a sunrise/sunset background",
   "main": "server.js",
