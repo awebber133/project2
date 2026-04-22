@@ -1,0 +1,11 @@
+# Node
+node_modules/
+
+# Terraform
+terraform/.terraform/
+*.tfstate
+*.tfstate.*
+terraform/.terraform.lock.hcl
+
+# Secrets
+*.pem
