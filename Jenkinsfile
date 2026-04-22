@@ -44,8 +44,6 @@ pipeline {
               --region us-east-1 \
               --name eks-cluster \
               --kubeconfig /var/jenkins_home/.kube/config
-
-            chown -R jenkins:jenkins /var/jenkins_home/.kube
           '''
         }
       }
@@ -53,14 +51,18 @@ pipeline {
 
     stage('Deploy with Helm') {
       steps {
-        sh '''
-          helm upgrade --install hello-app ./helm-chart \
-            --namespace jenkins-deploy --create-namespace \
-            --set image.repository=$ECR_REPO \
-            --set image.tag=$IMAGE_TAG
-        '''
+        withCredentials([[$class: 'AmazonWebServicesCredentialsBinding', credentialsId: 'aws-creds']]) {
+          sh '''
+            aws sts get-caller-identity
+
+            helm upgrade --install hello-app ./helm-chart \
+              --namespace jenkins-deploy --create-namespace \
+              --set image.repository=$ECR_REPO \
+              --set image.tag=$IMAGE_TAG
+          '''
+        }
       }
     }
 
-  } // end stages
-} // end pipeline
+  }
+}
