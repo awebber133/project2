@@ -2,12 +2,13 @@ pipeline {
   agent any
 
   environment {
-    ECR_REPO = '238845559349.dkr.ecr.us-east-1.amazonaws.com/app-repository'
-    IMAGE_TAG = "${env.BUILD_ID}"
+    ECR_REPO   = '238845559349.dkr.ecr.us-east-1.amazonaws.com/app-repository'
+    IMAGE_TAG  = "${env.BUILD_ID}"
     AWS_REGION = 'us-east-1'
   }
 
   stages {
+
     stage('Checkout') {
       steps {
         git branch: 'main', url: 'https://github.com/awebber133/project2.git'
@@ -31,6 +32,25 @@ pipeline {
       }
     }
 
+    stage('Configure kubeconfig') {
+      steps {
+        withCredentials([[$class: 'AmazonWebServicesCredentialsBinding', credentialsId: 'aws-creds']]) {
+          sh '''
+            mkdir -p /var/jenkins_home/.kube
+
+            aws sts get-caller-identity
+
+            aws eks update-kubeconfig \
+              --region us-east-1 \
+              --name eks-cluster \
+              --kubeconfig /var/jenkins_home/.kube/config
+
+            chown -R jenkins:jenkins /var/jenkins_home/.kube
+          '''
+        }
+      }
+    }
+
     stage('Deploy with Helm') {
       steps {
         sh '''
@@ -41,5 +61,6 @@ pipeline {
         '''
       }
     }
-  }
-}
+
+  } // end stages
+} // end pipeline
